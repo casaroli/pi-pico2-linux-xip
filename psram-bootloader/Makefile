@@ -41,9 +41,11 @@ flash-demo: demo flash
 	sleep 2
 	@$(MAKE) picotool PICOTOOL_ARGS="load -fxup 0 build/demo.bin"
 
-flash-kernel: ../buildroot/output/images/flash-image.bin flash
+flash-kernel: ../buildroot/output/images/flash-image.bin
 	sleep 3
-	@$(MAKE) picotool PICOTOOL_ARGS="load -fxup 0 ../buildroot/output/images/flash-image.bin"
+	@$(MAKE) picotool PICOTOOL_ARGS="load -fup 0 ../buildroot/output/images/raspberrypi-pico2.dtb -t bin"
+	sleep 3
+	@$(MAKE) picotool PICOTOOL_ARGS="load -fxup 1 ../buildroot/output/images/Image -t bin"
 
 clean:
 	@$(MAKE) -C demo clean

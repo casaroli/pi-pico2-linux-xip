@@ -9,15 +9,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 
-# == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.0.0)
-set(toolchainVersion RISCV_COREV_MAY_24)
-set(picotoolVersion 2.0.0)
+set(sdkVersion 2.2.0)
+set(toolchainVersion risco)
+set(picotoolVersion 2.2.0)
 set(pico_vscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${pico_vscode})
 include(${pico_vscode})
@@ -26,7 +26,7 @@ endif()
 
 set(PICO_PLATFORM rp2350-riscv CACHE STRING "Pico Platform")
 
-set(PICO_BOARD sparkfun_promicro_rp2350 CACHE STRING "Board type")
+set(PICO_BOARD pimoroni_pico_plus2_w_rp2350 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)

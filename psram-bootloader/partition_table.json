@@ -1,27 +1,39 @@
 {
-	"version": [1, 0],
-	"unpartitioned": {
-	  "families": ["absolute"],
-	  "permissions": {
-	    "secure": "rw",
-	    "nonsecure": "rw",
-	    "bootloader": "rw"
-	  }
-	},
-	"partitions": [
-	  {
-	    "name": "LINUX",
-	    "id": 0,
-	    "__comment__0_": "Start should be moved to avoid conflict with program memory",
-	    "start": "64K",
-	    "__comment__1_": "Size should be the size of kernel",
-	    "size": "8192K",
-	    "families": ["rp2350-riscv"],
-	    "permissions": {
-	      "secure": "rw",
-	      "nonsecure": "rw",
-	      "bootloader": "rw"
-	    }
-	  }
-	]
+    "version": [1, 0],
+    "unpartitioned": {
+        "families": ["absolute"],
+        "permissions": {
+            "secure": "rw",
+            "nonsecure": "rw",
+            "bootloader": "rw"
+        }
+    },
+    "partitions": [
+        {
+            "name": "dtb",
+            "id": 0,
+            "__comment__0_": "Start should be moved to avoid conflict with program memory",
+            "start": "64K",
+            "__comment__1_": "Size should align with 2M",
+            "size": "1984K",
+            "families": ["rp2350-riscv"],
+            "permissions": {
+                "secure": "rw",
+                "nonsecure": "rw",
+                "bootloader": "rw"
+            }
+        },
+        {
+            "name": "LINUX",
+            "id": 0,
+            "__comment__1_": "Size should be the size of kernel",
+            "size": "8192K",
+            "families": ["rp2350-riscv"],
+            "permissions": {
+                "secure": "rw",
+                "nonsecure": "rw",
+                "bootloader": "rw"
+            }
+        }
+    ]
 }

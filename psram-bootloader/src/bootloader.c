@@ -59,6 +59,11 @@
 #define SFE_RP2350_XIP_CSI_PIN 19
 #endif
 
+#if defined(PIMORONI_PICO_PLUS2_W_RP2350)
+// For the pimoroni plus 2
+#define SFE_RP2350_XIP_CSI_PIN 47
+#endif
+
 #define PSRAM_LOCATION _u(0x11000000)
 
 
@@ -80,54 +85,58 @@ static size_t get_devicetree_size(const void *data);
 int main() {
 	int ret;
 	uint32_t jump_ret, data;
-	size_t data_size, kernel_offset;
-	void *data_addr, *ram_addr = (void *)PSRAM_LOCATION;
+	// size_t data_size, kernel_offset;
+	void *dtb_addr, *ram_addr = (void *)PSRAM_LOCATION;
+	void *kernel_addr;
 
-	stdio_init_all();
+	stdio_uart_init();
 
 	ret = psram_setup_and_test();
 	if (ret) {
 		goto exit;
 	}
 
-	ret = rom_test(&data_addr, &data_size);
-	if (ret) {
-		goto exit;
-	}
+	dtb_addr = (void *)0x10010000;
+	// ret = rom_test(&data_addr, &data_size);
+	// if (ret) {
+	// 	goto exit;
+	// }
 
-	if (data_size > _psram_size) {
-		printf("Data size 0x%04x is larger than PSRAM size 0x%04x\n",
-			data_size, _psram_size);
-		goto exit;
-	}
+	// if (data_size > _psram_size) {
+	// 	printf("Data size 0x%04x is larger than PSRAM size 0x%04x\n",
+	// 		data_size, _psram_size);
+	// 	goto exit;
+	// }
 
-	if(data_size < 8) {
-		printf("Data size is 0\n");
-		goto exit;
-	}
+	// if(data_size < 8) {
+	// 	printf("Data size is 0\n");
+	// 	goto exit;
+	// }
 
 	printf("\nRom dump:\n");
-	hexdump(data_addr, min(data_size, 0x20));
+	hexdump(dtb_addr, 0x20);
 
-	kernel_offset = get_devicetree_size(data_addr);
-	if (kernel_offset) {
-		printf("Kernel offset: 0x%08x\n", kernel_offset);
-	} else {
-		printf("No kernel + device tree found\n");
-	}
+	kernel_addr = (void *)0x10200000;
+	// kernel_offset = get_devicetree_size(data_addr);
+	// if (kernel_offset) {
+	// 	printf("Kernel offset: 0x%08x\n", kernel_offset);
+	// } else {
+	// 	printf("No kernel + device tree found\n");
+	// }
 
-	memcpy(ram_addr, data_addr + kernel_offset, data_size - kernel_offset);
+	// copy from flash to RAM
+	memcpy(ram_addr, kernel_addr, (size_t)(1024*8192));
 	printf("\nRam dump:\n");
 	hexdump(ram_addr, 0x20);
 
-	if (kernel_offset) {
+	// if (kernel_offset) {
 		typedef void (*image_entry_arg_t)(unsigned long hart, void *dtb);
 		image_entry_arg_t image_entry = (image_entry_arg_t)ram_addr;
 
-		printf("\nJumping to kernel at 0x%08x and DT at 0x%08x\n", ram_addr, data_addr);
+		printf("\nJumping to kernel at %p and DT at %p\n", ram_addr, dtb_addr);
 		printf("If you are using USB serial, please connect over the hardware serial port.\n");
-		image_entry(0, data_addr);
-	}
+		image_entry(0, dtb_addr);
+	// }
 
 	ret = wait_for_input("Press y to jump to PSRAM...\r");
 	if (ret == 'y' || ret == 'Y') {
