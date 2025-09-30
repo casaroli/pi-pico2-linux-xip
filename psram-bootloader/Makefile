@@ -45,7 +45,9 @@ flash-kernel: ../buildroot/output/images/flash-image.bin
 	sleep 3
 	@$(MAKE) picotool PICOTOOL_ARGS="load -fup 0 ../buildroot/output/images/raspberrypi-pico2.dtb -t bin"
 	sleep 3
-	@$(MAKE) picotool PICOTOOL_ARGS="load -fxup 1 ../buildroot/output/images/Image -t bin"
+	@$(MAKE) picotool PICOTOOL_ARGS="load -fup 1 ../buildroot/output/images/xipImage -t bin"
+	sleep 3
+	@$(MAKE) picotool PICOTOOL_ARGS="load -fxup 2 ../buildroot/output/images/rootfs.cramfs -t bin"
 
 clean:
 	@$(MAKE) -C demo clean

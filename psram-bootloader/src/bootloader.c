@@ -66,6 +66,7 @@
 
 #define PSRAM_LOCATION _u(0x11000000)
 
+#define XIP
 
 #define PART_LOC_FIRST(x) ( ((x) & PICOBIN_PARTITION_LOCATION_FIRST_SECTOR_BITS) >> \
 			   PICOBIN_PARTITION_LOCATION_FIRST_SECTOR_LSB )
@@ -123,17 +124,25 @@ int main() {
 	// } else {
 	// 	printf("No kernel + device tree found\n");
 	// }
+	//
+	printf("Kernel dump:\n");
+	hexdump(kernel_addr, 0x20);
 
 	// copy from flash to RAM
+#ifndef XIP
 	memcpy(ram_addr, kernel_addr, (size_t)(1024*8192));
+#endif
 	printf("\nRam dump:\n");
 	hexdump(ram_addr, 0x20);
 
 	// if (kernel_offset) {
 		typedef void (*image_entry_arg_t)(unsigned long hart, void *dtb);
+#ifndef XIP
 		image_entry_arg_t image_entry = (image_entry_arg_t)ram_addr;
-
-		printf("\nJumping to kernel at %p and DT at %p\n", ram_addr, dtb_addr);
+#else
+		image_entry_arg_t image_entry = (image_entry_arg_t)kernel_addr;
+#endif
+		printf("\nJumping to kernel at %p and DT at %p\n", image_entry, dtb_addr);
 		printf("If you are using USB serial, please connect over the hardware serial port.\n");
 		image_entry(0, dtb_addr);
 	// }

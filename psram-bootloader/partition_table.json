@@ -25,9 +25,21 @@
         },
         {
             "name": "LINUX",
-            "id": 0,
+            "id": 1,
             "__comment__1_": "Size should be the size of kernel",
-            "size": "8192K",
+            "size": "6144K",
+            "families": ["rp2350-riscv"],
+            "permissions": {
+                "secure": "rw",
+                "nonsecure": "rw",
+                "bootloader": "rw"
+            }
+        },
+        {
+            "name": "rootfs",
+            "id": 2,
+            "__comment__1_": "Size should be the size of the rootfs",
+            "size": "4096K",
             "families": ["rp2350-riscv"],
             "permissions": {
                 "secure": "rw",
