@@ -1,1 +1,7 @@
 
+config BR2_PACKAGE_HELLO
+	bool "hello"
+	help
+	  Minimal external build hello.
+
+	  http://example.com/
