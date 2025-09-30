@@ -1,0 +1,52 @@
+From 7ebc567ee9b20afe19995a5a5515bf2c97e01381 Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 14:10:40 +0200
+Subject: [PATCH 5/7] hack(xip): disable fixup
+
+I still do not fully understand how this works, so I just disable it.
+---
+ arch/riscv/include/asm/pgtable.h   | 6 +++++-
+ arch/riscv/include/asm/xip_fixup.h | 2 +-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index 428e48e5f57d..4455049af302 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -15,7 +15,11 @@
+ #ifdef CONFIG_RELOCATABLE
+ #define KERNEL_LINK_ADDR	UL(0)
+ #else
++#ifndef CONFIG_XIP_KERNEL
+ #define KERNEL_LINK_ADDR	_AC(CONFIG_PHYS_RAM_BASE, UL)
++#else
++#define KERNEL_LINK_ADDR	_AC(CONFIG_XIP_PHYS_ADDR, UL)
++#endif
+ #endif
+ #define KERN_VIRT_SIZE		(UL(-1))
+ #else
+@@ -138,7 +142,7 @@
+ 
+ #include <linux/page_table_check.h>
+ 
+-#ifdef CONFIG_XIP_KERNEL
++#ifdef CONFIG_XIP_KERNEL_NOPE
+ #define XIP_FIXUP(addr) ({							\
+ 	extern char _sdata[], _start[], _end[];					\
+ 	uintptr_t __rom_start_data = CONFIG_XIP_PHYS_ADDR			\
+diff --git a/arch/riscv/include/asm/xip_fixup.h b/arch/riscv/include/asm/xip_fixup.h
+index f3d56299bc22..4362e3b30f84 100644
+--- a/arch/riscv/include/asm/xip_fixup.h
++++ b/arch/riscv/include/asm/xip_fixup.h
+@@ -7,7 +7,7 @@
+ 
+ #include <linux/pgtable.h>
+ 
+-#ifdef CONFIG_XIP_KERNEL
++#ifdef CONFIG_XIP_KERNEL_NOPE
+ .macro XIP_FIXUP_OFFSET reg
+ 	/* Fix-up address in Flash into address in RAM early during boot before
+ 	 * MMU is up. Because generated code "thinks" data is in Flash, but it
+-- 
+2.49.0
+

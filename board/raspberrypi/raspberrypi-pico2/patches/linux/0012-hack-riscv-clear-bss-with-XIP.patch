@@ -1,0 +1,28 @@
+From 8375f17c42031fb12c187e41ad8b07db1e74ac5f Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 14:12:31 +0200
+Subject: [PATCH 6/7] hack(riscv): clear bss with XIP
+
+I am not sure why this is only enabled for non XIP.
+
+If this is not cleared, we get some problems in the D-Cache.
+---
+ arch/riscv/kernel/head.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+index 356d5397b2a2..e90c43379f5c 100644
+--- a/arch/riscv/kernel/head.S
++++ b/arch/riscv/kernel/head.S
+@@ -278,7 +278,7 @@ SYM_CODE_START(_start_kernel)
+ 	mv a1, s1
+ #endif
+ 
+-#ifndef CONFIG_XIP_KERNEL
++#ifndef CONFIG_XIP_KERNEL_YEP
+ 	/* Clear BSS for flat non-ELF images */
+ 	la a3, __bss_start
+ 	la a4, __bss_stop
+-- 
+2.49.0
+

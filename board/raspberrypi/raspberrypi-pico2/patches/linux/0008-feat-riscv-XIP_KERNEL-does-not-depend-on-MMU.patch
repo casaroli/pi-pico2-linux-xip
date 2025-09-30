@@ -1,0 +1,25 @@
+From 93f01e206542a7600988a145ba006259a4b5ba5e Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 14:05:08 +0200
+Subject: [PATCH 2/7] feat(riscv): XIP_KERNEL does not depend on MMU
+
+---
+ arch/riscv/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index bbec87b79309..a46577a1ffab 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -1244,7 +1244,7 @@ config PHYS_RAM_BASE
+ 
+ config XIP_KERNEL
+ 	bool "Kernel Execute-In-Place from ROM"
+-	depends on MMU && SPARSEMEM && NONPORTABLE
++	# depends on MMU && SPARSEMEM && NONPORTABLE
+ 	# This prevents XIP from being enabled by all{yes,mod}config, which
+ 	# fail to build since XIP doesn't support large kernels.
+ 	depends on !COMPILE_TEST
+-- 
+2.49.0
+

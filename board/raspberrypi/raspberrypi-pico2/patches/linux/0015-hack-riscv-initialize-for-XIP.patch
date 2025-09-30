@@ -1,0 +1,42 @@
+From e8f9e08d294dcc7c32e4dce78e3c55f5a2795961 Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 16:32:31 +0200
+Subject: [PATCH 2/2] hack(riscv): initialize for XIP
+
+---
+ arch/riscv/mm/init.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index fb4500a1ed7b..11ed0c53ff54 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -1372,6 +1372,25 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
+ 	dtb_early_va = (void *)dtb_pa;
+ 	dtb_early_pa = dtb_pa;
+ 
++#ifdef CONFIG_XIP_KERNEL
++	kernel_map.xiprom = (uintptr_t)CONFIG_XIP_PHYS_ADDR;
++	kernel_map.xiprom_sz = (uintptr_t)(&_exiprom) - (uintptr_t)(&_xiprom);
++
++	phys_ram_base = CONFIG_PHYS_RAM_BASE;
++
++	kernel_map.virt_addr = (uintptr_t)CONFIG_XIP_PHYS_ADDR;
++	kernel_map.phys_addr = (uintptr_t)CONFIG_XIP_PHYS_ADDR;
++
++	kernel_map.size = (uintptr_t)(&_end) - (uintptr_t)(&_start);
++	// kernel_map.size = kernel_map.xiprom_sz;
++
++	// kernel_map.va_pa_offset = 0;
++
++	kernel_map.va_kernel_xip_text_pa_offset = kernel_map.virt_addr - kernel_map.xiprom;
++	kernel_map.va_kernel_xip_data_pa_offset = kernel_map.virt_addr - kernel_map.phys_addr
++						+ (uintptr_t)&_sdata - (uintptr_t)&_start;
++#endif
++
+ #ifdef CONFIG_RELOCATABLE
+ 	kernel_map.virt_addr = (uintptr_t)_start;
+ 	kernel_map.phys_addr = (uintptr_t)_start;
+-- 
+2.49.0
+

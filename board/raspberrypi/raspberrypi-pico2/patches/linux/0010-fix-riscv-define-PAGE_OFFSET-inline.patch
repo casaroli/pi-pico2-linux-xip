@@ -1,0 +1,26 @@
+From bf5b243b7f9a8b0809b35ca434af4e96aa51622b Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 14:09:31 +0200
+Subject: [PATCH 4/7] fix(riscv): define PAGE_OFFSET inline
+
+Because it is used in the linker script (for XIP)
+---
+ arch/riscv/include/asm/page.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+index 572a141ddecd..d6c5f567b11c 100644
+--- a/arch/riscv/include/asm/page.h
++++ b/arch/riscv/include/asm/page.h
+@@ -38,7 +38,7 @@
+ #define PAGE_OFFSET		_AC(0xc0000000, UL)
+ #endif /* CONFIG_64BIT */
+ #else
+-#define PAGE_OFFSET		((unsigned long)phys_ram_base)
++#define PAGE_OFFSET		_AC(CONFIG_PHYS_RAM_BASE, UL)
+ #endif /* CONFIG_MMU */
+ 
+ #ifndef __ASSEMBLY__
+-- 
+2.49.0
+

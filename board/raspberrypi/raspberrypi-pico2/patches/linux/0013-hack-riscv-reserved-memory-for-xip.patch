@@ -1,0 +1,111 @@
+From 55ae4b15144e382f37d1b9ca931ab77652a06e33 Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 14:22:17 +0200
+Subject: [PATCH 7/7] hack(riscv): reserved memory for xip
+
+Maybe this is not necessary.
+---
+ arch/riscv/kernel/setup.c | 67 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+index f7c9a1caa83e..ff38f0cb7405 100644
+--- a/arch/riscv/kernel/setup.c
++++ b/arch/riscv/kernel/setup.c
+@@ -59,6 +59,7 @@ unsigned long boot_cpu_hartid;
+  */
+ static struct resource kimage_res = { .name = "Kernel image", };
+ static struct resource code_res = { .name = "Kernel code", };
++static struct resource rwdata_res = { .name = "Kernel rwdata", };
+ static struct resource data_res = { .name = "Kernel data", };
+ static struct resource rodata_res = { .name = "Kernel rodata", };
+ static struct resource bss_res = { .name = "Kernel bss", };
+@@ -76,14 +77,15 @@ static int __init add_resource(struct resource *parent,
+ 
+ 	ret = insert_resource(parent, res);
+ 	if (ret < 0) {
+-		pr_err("Failed to add a %s resource at %llx\n",
+-			res->name, (unsigned long long) res->start);
++		pr_err("Failed to add a %s resource at %llx - %llx\n",
++			res->name, (unsigned long long) res->start, (unsigned long long) res->end);
+ 		return ret;
+ 	}
+ 
+ 	return 1;
+ }
+ 
++#ifndef CONFIG_XIP_KERNEL
+ static int __init add_kernel_resources(void)
+ {
+ 	int ret = 0;
+@@ -135,6 +137,67 @@ static int __init add_kernel_resources(void)
+ 
+ 	return ret;
+ }
++#else
++static int __init add_kernel_resources(void)
++{
++	int ret = 0;
++
++	/*
++	 * The memory region of the kernel image is continuous and
++	 * was reserved on setup_bootmem, register it here as a
++	 * resource, with the various segments of the image as
++	 * child nodes.
++	 */
++
++	code_res.start = __pa_symbol(_text);
++	code_res.end = __pa_symbol(_etext) - 1;
++	code_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	rodata_res.start = __pa_symbol(__start_rodata);
++	rodata_res.end = __pa_symbol(__end_rodata) - 1;
++	rodata_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	data_res.start = __pa_symbol(_data);
++	data_res.end = __pa_symbol(_edata) - 1;
++	data_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	bss_res.start = __pa_symbol(__bss_start);
++	bss_res.end = __pa_symbol(__bss_stop) - 1;
++	bss_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	kimage_res.start = code_res.start;
++	kimage_res.end = rodata_res.end;
++	kimage_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	rwdata_res.start = __pa_symbol(_data);
++	rwdata_res.end = __pa_symbol(__bss_stop) - 1;
++	rwdata_res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
++
++	// ret = add_resource(&iomem_resource, &kimage_res);
++	// if (ret < 0)
++	// 	return ret;
++
++	// ret = add_resource(&kimage_res, &code_res);
++	// if (ret < 0)
++	// 	return ret;
++
++	// ret = add_resource(&kimage_res, &rodata_res);
++	// if (ret < 0)
++	// 	return ret;
++
++	ret = add_resource(&iomem_resource, &rwdata_res);
++	if (ret < 0)
++		return ret;
++
++	ret = add_resource(&rwdata_res, &data_res);
++	if (ret < 0)
++		return ret;
++
++	ret = add_resource(&rwdata_res, &bss_res);
++
++	return ret;
++}
++#endif
+ 
+ static void __init init_resources(void)
+ {
+-- 
+2.49.0
+

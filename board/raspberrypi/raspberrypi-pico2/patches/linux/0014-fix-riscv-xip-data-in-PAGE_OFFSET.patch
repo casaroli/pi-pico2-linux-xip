@@ -1,0 +1,27 @@
+From cabf59e23040e1db4982d49a2060739c188672b5 Mon Sep 17 00:00:00 2001
+From: Marco Casaroli <marco.casaroli@gmail.com>
+Date: Tue, 30 Sep 2025 16:32:11 +0200
+Subject: [PATCH 1/2] fix(riscv-xip): data in PAGE_OFFSET
+
+Data is on the physical RAM.
+---
+ arch/riscv/kernel/vmlinux-xip.lds.S | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/riscv/kernel/vmlinux-xip.lds.S b/arch/riscv/kernel/vmlinux-xip.lds.S
+index a7611789bad5..36f99abce625 100644
+--- a/arch/riscv/kernel/vmlinux-xip.lds.S
++++ b/arch/riscv/kernel/vmlinux-xip.lds.S
+@@ -66,8 +66,7 @@ SECTIONS
+  * From this point, stuff is considered writable and will be copied to RAM
+  */
+ 	__data_loc = ALIGN(PAGE_SIZE);		/* location in file */
+-	. = ALIGN(SECTION_ALIGN);		/* location in memory */
+-
++	. = PAGE_OFFSET;		/* location in memory */
+ #undef LOAD_OFFSET
+ #define LOAD_OFFSET (KERNEL_LINK_ADDR + _sdata - __data_loc)
+ 
+-- 
+2.49.0
+
